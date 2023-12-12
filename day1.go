@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"container/list"
 	"fmt"
 	"log"
 	"os"
@@ -26,9 +27,9 @@ func processLine(line string) int {
 	return first*10 + last
 }
 
-var digitWords = []string{"zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"}
+var digitWords = []string{"one", "two", "three", "four", "five", "six", "seven", "eight", "nine"}
 
-const overlapsAllowed = false
+const overlapsAllowed = true
 
 // Solution:
 // - 55604: no overlaps considered (sevenine = 77, nineight = 99) --> no
@@ -37,7 +38,7 @@ func processLine2(line string) int {
 	var first, last int
 	var translated int
 	seenFirst := false
-	active := make([]string, 10)
+	active := make([]string, 9)
 	for _, c := range line {
 		// As we process each letter, we either:
 		// - complete a number
@@ -49,15 +50,15 @@ func processLine2(line string) int {
 				seenFirst = true
 			}
 			last = translated
-			active = make([]string, 10)
+			active = make([]string, 9)
 			continue
 		}
 		for i, digit := range digitWords {
 			if strings.Index(digit, active[i]+string(c)) == 0 {
 				active[i] += string(c)
 				if active[i] == digit {
-					// Found! ~Off by one, i = 0 -> digit is 1~
-					translated = i
+					// Found!
+					translated = i + 1
 					// Clear out anyone else who might be having ideas about starting early
 					if !seenFirst {
 						first = translated
@@ -68,7 +69,7 @@ func processLine2(line string) int {
 					if overlapsAllowed {
 						active[i] = ""
 					} else {
-						active = make([]string, 10)
+						active = make([]string, 9)
 						break
 					}
 				}
@@ -92,6 +93,96 @@ func processLine2(line string) int {
 	return first*10 + last
 }
 
+type Active struct {
+	substr string
+	digit  int
+}
+
+// - 55488: wrong. bad and wrong and bad. lol.
+// - 55597: wrong. double letters: eeightabcthreee
+// - 55614: success! finally.
+func processLine3(line string) int {
+	var first, last int
+	{
+		active := make([]string, 9)
+		// Go from front
+	lineloop:
+		for _, c := range line {
+			// numeric
+			if unicode.IsNumber(c) {
+				first = int(c - '0')
+				break
+			}
+			for i, digit := range digitWords {
+				if strings.Index(digit, active[i]+string(c)) == 0 {
+					active[i] += string(c)
+					if active[i] == digit {
+						first = i + 1
+						break lineloop
+					}
+				} else if strings.Index(digit, string(c)) == 0 {
+					// handle the case where it's invalid for what we have so far but it can start a new: "tthree"
+					active[i] = string(c)
+					// not bothering checking because this is single
+				} else {
+					active[i] = ""
+				}
+			}
+		}
+	}
+	{
+		// We do this whole list approach literally only for "three"
+		active := list.New()
+		// Go from back
+	lineloop2:
+		for i := len(line) - 1; i >= 0; i-- {
+			c := line[i]
+
+			// numeric
+			if '0' <= c && c <= '9' {
+				last = int(c - '0')
+				break
+			}
+			var elementsToRemove []*list.Element
+			// First see if we can extend active
+			for e := active.Front(); e != nil; e = e.Next() {
+				a := e.Value.(Active)
+				digit := digitWords[a.digit-1]
+
+				// Can we continue extending?
+				if strings.LastIndex(digit, string(c)+a.substr) == len(digit)-(len(a.substr)+1) {
+					newStr := string(c) + a.substr
+					if newStr == digit {
+						last = a.digit
+						break lineloop2
+					}
+					// effectively update
+					active.PushFront(Active{
+						substr: newStr,
+						digit:  a.digit,
+					})
+				}
+				elementsToRemove = append(elementsToRemove, e)
+			}
+			for _, e := range elementsToRemove {
+				active.Remove(e)
+			}
+
+			// Then just see if we're starting something new
+			for i, digit := range digitWords {
+				if strings.LastIndex(digit, string(c)) == len(digit)-1 {
+					active.PushBack(Active{
+						substr: string(c),
+						digit:  i + 1,
+					})
+				}
+			}
+		}
+	}
+
+	return first*10 + last
+}
+
 func main() {
 	// https://adventofcode.com/2023/day/1/input
 	file, err := os.Open("day1.txt")
@@ -99,7 +190,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Overlaps allowed?", overlapsAllowed)
+	// fmt.Println(processLine3("eeightthreee"))
+	// os.Exit(0)
+
+	// fmt.Println("Overlaps allowed?", overlapsAllowed)
 
 	// fmt.Println(processLine2("sevenine"))
 	// fmt.Println(processLine2("nineight"))
@@ -110,14 +204,13 @@ func main() {
 	sum := 0
 	idx := 0
 	for scanner.Scan() {
-		lineRes := processLine2(scanner.Text())
-		if idx == 978 {
-			fmt.Println("lineRes", lineRes)
+		line := scanner.Text()
+		line2Res := processLine2(line)
+		line3Res := processLine3(line)
+		if line2Res != line3Res {
+			fmt.Println(idx, line, line2Res, line3Res)
 		}
-		sum += lineRes
-		// if idx > 15 {
-		// 	break
-		// }
+		sum += line3Res
 		idx++
 	}
 
