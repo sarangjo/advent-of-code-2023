@@ -105,7 +105,7 @@ int main() {
   const fs::path cwd =
       fs::path{std::getenv("HOME")} / "source" / "advent-of-code-2023";
 
-  std::ifstream infile{cwd / "sample2.txt"};
+  std::ifstream infile{cwd / "day2.txt"};
   if (!infile) {
     std::cerr << "Can't find file" << std::endl;
     return 1;
