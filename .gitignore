@@ -1,2 +1,5 @@
 day*.txt
 *.exe
+
+# python
+env
