@@ -1,5 +1,6 @@
 from io import TextIOWrapper
 
+
 def part1(f: TextIOWrapper):
     # Hold three lines
     prev = ""
@@ -9,16 +10,13 @@ def part1(f: TextIOWrapper):
     sum = 0
 
     cur = f.readline().strip()
-    if cur == "":
-        return sum
-
     while True:
         next = f.readline().strip()
 
         # Go through cur and look for numbers
         now_num = 0
         start_idx = -1
-        for i,c in enumerate(cur):
+        for i, c in enumerate(cur):
             if c.isnumeric():
                 if start_idx == -1:
                     start_idx = i
@@ -62,9 +60,75 @@ def check_symbol(prev: str, cur: str, next: str, start, end):
             return True
 
 
+def part2(f: TextIOWrapper):
+    # Hold three lines
+    prev = ""
+    cur = ""
+    next = ""
+
+    sum = 0
+
+    cur = f.readline().strip()
+    while True:
+        next = f.readline().strip()
+
+        # Look for gears
+        for i, c in enumerate(cur):
+            if c == "*":
+                # Check if this is a gear
+                sum += get_gear_ratio(prev, cur, next, i)
+
+        prev = cur
+        cur = next
+
+        if cur == "":
+            return sum
+
+
+def get_gear_ratio(prev: str, cur: str, next: str, i):
+    # How many numbers are adjacent to cur[i]?
+    nums = []
+
+    for line in [prev, cur, next]:
+        # Start with prev[i-1] and back
+        num = ""
+        j = i-1
+        while j >= 0:
+            if line[j].isnumeric():
+                num = line[j] + num
+            else:
+                break
+            j -= 1
+
+        # Then check line[i]
+        if line[i].isnumeric():
+            num += line[i]
+        else:
+            if num != "":
+                nums.append(num)
+                num = ""
+
+        # Finally line[i+1] an onward
+        j = i+1
+        while j < len(line):
+            if line[j].isnumeric():
+                num += line[j]
+            else:
+                break
+            j += 1
+
+        if num != "":
+            nums.append(num)
+
+    if len(nums) == 2:
+        return int(nums[0]) * int(nums[1])
+    return 0
+
+
 def main():
     with open("day3.txt") as f:
-        print("sum:", part1(f))
+        print("sum:", part2(f))
+
 
 if __name__ == "__main__":
     main()
