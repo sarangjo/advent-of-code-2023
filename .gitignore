@@ -1,5 +1,9 @@
 day*.txt
 *.exe
+*.js
 
-# python
+# day3: python
 env
+
+# day5: typescript
+node_modules
