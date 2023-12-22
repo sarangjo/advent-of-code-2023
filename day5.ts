@@ -44,7 +44,7 @@ function part1(lines: string[]) {
   const seeds = seedsLine.substring(seedsLine.indexOf(":") + 2).split(" ");
 
   let bestLoc: number | undefined = undefined;
-  for (let seed of seeds) {
+  for (const seed of seeds) {
     const loc = translateSeed(lines, seed);
     if (bestLoc === undefined || loc < bestLoc) {
       bestLoc = loc;
@@ -52,6 +52,12 @@ function part1(lines: string[]) {
   }
 
   return bestLoc;
+}
+
+interface MapLine {
+  dstStart: number;
+  srcStart: number;
+  length: number;
 }
 
 function translateSeedRange(lines: string[], seedRange: SeedRange) {
@@ -63,18 +69,44 @@ function translateSeedRange(lines: string[], seedRange: SeedRange) {
     i++;
 
     let line = lines[i];
-    let done = false;
 
     // Go one map at a time
+    let newRanges = [];
     while (line.trim().length !== 0) {
-      if (!done) {
-        const parts = line.split(" ").map((x) => +x);
+      // For each line in map, update our known ranges
+      const mapLine = line.split(" ").reduce((acc, cur, idx) => {
+        switch (idx) {
+          case 0:
+            acc.dstStart = +cur;
+            break;
+          case 1:
+            acc.srcStart = +cur;
+            break;
+          case 2:
+            acc.length = +cur;
+            break;
+        }
+        return acc;
+      }, {} as MapLine);
 
-        if (val >= parts[SRC_START] && val < parts[SRC_START] + parts[RANGE_LEN]) {
-          val = parts[DST_START] + (val - parts[SRC_START]);
-          done = true;
+      for (const range of valRanges) {
+        // Okay, how does this range intersect with this line?
+        if (range.start < mapLine.srcStart) {
+          if (range.start + range.length < mapLine.srcStart) {
+            // do nothing
+          } else if (range.start + range.length < mapLine.srcStart + mapLine.length) {
+            // split - first section is untouched, the rest gets mapped
+
+            newRanges.push();
+          }
         }
       }
+
+      // if (val >= parts[SRC_START] && val < parts[SRC_START] + parts[RANGE_LEN]) {
+      //   val = parts[DST_START] + (val - parts[SRC_START]);
+      //   done = true;
+      // }
+
       line = lines[++i];
     }
 
@@ -106,7 +138,7 @@ function part2(lines: string[]) {
 
   console.log(seedRanges);
 
-  for (let seedRange of seedRanges) {
+  for (const seedRange of seedRanges) {
     const loc = translateSeedRange(lines, seedRange);
   }
 }
