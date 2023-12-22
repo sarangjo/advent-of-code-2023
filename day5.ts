@@ -10,10 +10,9 @@ function translateSeed(lines: string[], seed: string) {
   let i = 2;
   while (i < lines.length) {
     // console.log("Current val:", val);
-
-    // Skip map title
     // console.log("Translation:", lines[i]);
 
+    // Skip map title
     i++;
 
     let line = lines[i];
@@ -39,9 +38,7 @@ function translateSeed(lines: string[], seed: string) {
   return val;
 }
 
-function part1(data: string) {
-  const lines = data.split("\n");
-
+function part1(lines: string[]) {
   // Start with the seeds
   const seedsLine = lines[0];
   const seeds = seedsLine.substring(seedsLine.indexOf(":") + 2).split(" ");
@@ -57,9 +54,66 @@ function part1(data: string) {
   return bestLoc;
 }
 
+function translateSeedRange(lines: string[], seedRange: SeedRange) {
+  let valRanges = [seedRange];
+
+  let i = 2;
+  while (i < lines.length) {
+    // Skip map title
+    i++;
+
+    let line = lines[i];
+    let done = false;
+
+    // Go one map at a time
+    while (line.trim().length !== 0) {
+      if (!done) {
+        const parts = line.split(" ").map((x) => +x);
+
+        if (val >= parts[SRC_START] && val < parts[SRC_START] + parts[RANGE_LEN]) {
+          val = parts[DST_START] + (val - parts[SRC_START]);
+          done = true;
+        }
+      }
+      line = lines[++i];
+    }
+
+    // Onto next map
+    i++;
+  }
+
+  return val;
+}
+
+interface SeedRange {
+  start: number;
+  length: number;
+}
+
+function part2(lines: string[]) {
+  // Now we have a seed range, so we operate on the whole range, effectively
+  const seedsLine = lines[0];
+  const seedRanges = seedsLine
+    .substring(seedsLine.indexOf(":") + 2)
+    .split(" ")
+    .reduce((acc, cur, idx, arr) => {
+      if (idx % 2 == 0) {
+        acc.push({ start: +cur, length: +arr[idx + 1] });
+      }
+
+      return acc;
+    }, [] as SeedRange[]);
+
+  console.log(seedRanges);
+
+  for (let seedRange of seedRanges) {
+    const loc = translateSeedRange(lines, seedRange);
+  }
+}
+
 async function main() {
-  const data = await fs.readFile("day5.txt");
-  const lowest = part1(data.toString());
+  const lines = (await fs.readFile("sample5.txt")).toString().split("\n");
+  const lowest = part2(lines);
   console.log("Lowest location:", lowest);
 }
 
