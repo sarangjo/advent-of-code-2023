@@ -26,6 +26,6 @@ https://adventofcode.com/
 5. Typescript (with NodeJS)
     ```
     $ npm install
-    $ npx tsc day5.ts
-    $ node day5.js
+    $ npx tsc
+    $ node ./out/day5.js
     ```

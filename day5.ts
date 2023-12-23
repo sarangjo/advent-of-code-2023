@@ -65,12 +65,14 @@ function translateSeedRange(lines: string[], seedRange: SeedRange) {
 
   let i = 2;
   while (i < lines.length) {
+    // Go one map at a time
+
     // Skip map title
     i++;
 
     let line = lines[i];
 
-    // Go one map at a time
+    // valRanges has the untranslated ranges, newRanges have been translated
     let newRanges = [];
     while (line.trim().length !== 0) {
       // For each line in map, update our known ranges
@@ -89,32 +91,86 @@ function translateSeedRange(lines: string[], seedRange: SeedRange) {
         return acc;
       }, {} as MapLine);
 
-      for (const range of valRanges) {
+      let untranslatedRanges = [];
+
+      while (valRanges.length !== 0) {
+        const range = valRanges.pop();
+
         // Okay, how does this range intersect with this line?
         if (range.start < mapLine.srcStart) {
           if (range.start + range.length < mapLine.srcStart) {
             // do nothing
-          } else if (range.start + range.length < mapLine.srcStart + mapLine.length) {
-            // split - first section is untouched, the rest gets mapped
+            untranslatedRanges.push(range);
+          } else if (range.start + range.length <= mapLine.srcStart + mapLine.length) {
+            // split - first section is shrunk, the rest gets mapped
+            untranslatedRanges.push({
+              start: range.start,
+              length: mapLine.srcStart - range.start,
+            });
 
-            newRanges.push();
+            newRanges.push({
+              start: mapLine.dstStart,
+              length: range.length - (mapLine.srcStart - range.start),
+            } as SeedRange);
+          } else {
+            // range goes beyond map line - split into three
+            // section 1 gets truncated
+            untranslatedRanges.push({
+              start: range.start,
+              length: mapLine.srcStart - range.start,
+            });
+
+            // section 2 gets mapped
+            newRanges.push({ start: mapLine.dstStart, length: mapLine.length });
+
+            // section 3 gets newly added back to untranslatedRanges
+            untranslatedRanges.push({
+              start: mapLine.srcStart + mapLine.length,
+              length: range.length - mapLine.length - (mapLine.srcStart - range.start),
+            });
           }
+        } else if (
+          range.start > mapLine.srcStart &&
+          range.start < mapLine.srcStart + mapLine.length
+        ) {
+          if (range.start + range.length <= mapLine.srcStart + mapLine.length) {
+            // easy - just fully map
+            newRanges.push({
+              start: mapLine.dstStart + (range.start - mapLine.srcStart),
+              length: range.length,
+            });
+          } else {
+            // split up
+            newRanges.push({
+              start: mapLine.dstStart + (range.start - mapLine.srcStart),
+              length: mapLine.srcStart - range.start,
+            });
+
+            untranslatedRanges.push({
+              start: range.start + range.length,
+              length: range.length - (mapLine.srcStart - range.start),
+            });
+          }
+        } else {
+          untranslatedRanges.push(range);
         }
       }
 
-      // if (val >= parts[SRC_START] && val < parts[SRC_START] + parts[RANGE_LEN]) {
-      //   val = parts[DST_START] + (val - parts[SRC_START]);
-      //   done = true;
-      // }
+      valRanges = untranslatedRanges;
 
       line = lines[++i];
     }
+
+    // Okay we're all done with map lines - combine valRanges and newRanges
+    valRanges.push(...newRanges);
 
     // Onto next map
     i++;
   }
 
-  return val;
+  return valRanges.reduce((prevMin: undefined | number, cur) => {
+    return prevMin === undefined || cur.start < prevMin ? cur.start : prevMin;
+  }, undefined);
 }
 
 interface SeedRange {
@@ -138,13 +194,17 @@ function part2(lines: string[]) {
 
   console.log(seedRanges);
 
+  let min: number | undefined = undefined;
   for (const seedRange of seedRanges) {
     const loc = translateSeedRange(lines, seedRange);
+    min = min === undefined || loc < min ? loc : min;
   }
+
+  return min;
 }
 
 async function main() {
-  const lines = (await fs.readFile("sample5.txt")).toString().split("\n");
+  const lines = (await fs.readFile("day5.txt")).toString().split("\n");
   const lowest = part2(lines);
   console.log("Lowest location:", lowest);
 }
