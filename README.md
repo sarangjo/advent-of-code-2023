@@ -29,3 +29,8 @@ https://adventofcode.com/
     $ npx tsc
     $ node ./out/day5.js
     ```
+6. Java
+    ```
+    $ javac day6.java
+    $ java day6
+    ```
