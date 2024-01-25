@@ -9,9 +9,6 @@ function translateSeed(lines: string[], seed: string) {
 
   let i = 2;
   while (i < lines.length) {
-    // console.log("Current val:", val);
-    // console.log("Translation:", lines[i]);
-
     // Skip map title
     i++;
 
@@ -63,7 +60,7 @@ interface MapLine {
 function translateSeedRange(lines: string[], seedRange: SeedRange) {
   let valRanges = [seedRange];
 
-  let i = 2;
+  let i = 2; // start with the first map
   while (i < lines.length) {
     // Go one map at a time
 
@@ -126,11 +123,12 @@ function translateSeedRange(lines: string[], seedRange: SeedRange) {
             // section 3 gets newly added back to untranslatedRanges
             untranslatedRanges.push({
               start: mapLine.srcStart + mapLine.length,
-              length: range.length - mapLine.length - (mapLine.srcStart - range.start),
+              length: range.start + range.length - (mapLine.srcStart + mapLine.length),
             });
           }
+          // SO FAR SO GOOD!
         } else if (
-          range.start > mapLine.srcStart &&
+          range.start >= mapLine.srcStart &&
           range.start < mapLine.srcStart + mapLine.length
         ) {
           if (range.start + range.length <= mapLine.srcStart + mapLine.length) {
@@ -143,12 +141,12 @@ function translateSeedRange(lines: string[], seedRange: SeedRange) {
             // split up
             newRanges.push({
               start: mapLine.dstStart + (range.start - mapLine.srcStart),
-              length: mapLine.srcStart - range.start,
+              length: mapLine.srcStart + mapLine.length - range.start,
             });
 
             untranslatedRanges.push({
-              start: range.start + range.length,
-              length: range.length - (mapLine.srcStart - range.start),
+              start: mapLine.srcStart + mapLine.length,
+              length: range.length - (mapLine.srcStart + mapLine.length - range.start),
             });
           }
         } else {
@@ -191,8 +189,6 @@ function part2(lines: string[]) {
 
       return acc;
     }, [] as SeedRange[]);
-
-  console.log(seedRanges);
 
   let min: number | undefined = undefined;
   for (const seedRange of seedRanges) {
