@@ -1,3 +1,5 @@
+using System.Security;
+
 class Day7
 {
     static void Main()
@@ -23,7 +25,12 @@ class Day7
     }
 }
 
-class Hand : IComparable<Hand>
+enum Part
+{
+    ONE, TWO
+}
+
+abstract class Hand : IComparable<Hand>
 {
     public enum Type : int
     {
@@ -37,23 +44,30 @@ class Hand : IComparable<Hand>
     };
 
     public string cardOrder;
-    public IOrderedEnumerable<KeyValuePair<char, int>> sortedCards;
     public Type type = Type.HIGH_CARD;
     public int bid;
 
-    public Hand(string def, int bid)
+    public Hand(string cardOrder, int bid, Part part)
     {
-        cardOrder = def;
+        this.cardOrder = cardOrder;
         this.bid = bid;
+        switch (part)
+        {
+            case Part.ONE: CalculateType1(cardOrder);
+            case Part.TWO: CalculateType2(cardOrder);
+        }
+    }
 
+    private Dictionary<char, int> CalculateType1(string cardOrder)
+    {
         var cards = new Dictionary<char, int>();
 
-        foreach (var c in def)
+        foreach (var c in cardOrder)
         {
             cards[c] = cards.TryGetValue(c, out int value) ? value + 1 : 1;
         }
 
-        sortedCards = (from entry in cards orderby entry.Value descending select entry);
+        var sortedCards = from entry in cards orderby entry.Value descending select entry;
 
         foreach (var (c, n) in sortedCards)
         {
@@ -85,6 +99,58 @@ class Hand : IComparable<Hand>
                 }
             }
         }
+
+        return cards;
+    }
+
+    private void CalculateType2(string cardOrder)
+    {
+        var cards = new Dictionary<char, int>();
+        int j = 0;
+
+        foreach (var c in cardOrder)
+        {
+            if (c == 'J') { j++; }
+            else
+            {
+                cards[c] = cards.TryGetValue(c, out int value) ? value + 1 : 1;
+            }
+        }
+
+        var sortedCards = from entry in cards orderby entry.Value descending select entry;
+
+        foreach (var (c, n) in sortedCards)
+        {
+            if (n == 5)
+            {
+                type = Type.FIVE_OF_A_KIND;
+            }
+            else if (n == 4)
+            {
+                type = Type.FOUR_OF_A_KIND;
+            }
+            else if (n == 3)
+            {
+                type = Type.THREE_OF_A_KIND;
+            }
+            else if (n == 2)
+            {
+                if (type == Type.THREE_OF_A_KIND)
+                {
+                    type = Type.FULL_HOUSE;
+                }
+                else if (type == Type.ONE_PAIR)
+                {
+                    type = Type.TWO_PAIR;
+                }
+                else
+                {
+                    type = Type.ONE_PAIR;
+                }
+            }
+        }
+
+        return cards;
     }
 
     public int CompareTo(Hand? other)
@@ -105,7 +171,7 @@ class Hand : IComparable<Hand>
         return 0;
     }
 
-    public static int GetValue(char c)
+    private static int GetValue(char c)
     {
         if (char.IsNumber(c)) return c - '0';
         return c switch
