@@ -4,6 +4,8 @@ https://adventofcode.com/
 
 ## How to run
 
+https://raygun.com/blog/programming-languages/
+
 1. Golang
     ```
     $ go build day1.go
