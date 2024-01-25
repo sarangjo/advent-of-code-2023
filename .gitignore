@@ -11,3 +11,7 @@ out
 
 # day6: java
 *.class
+
+# day7: C#
+bin
+obj
