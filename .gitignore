@@ -8,3 +8,6 @@ env
 # day5: typescript
 node_modules
 out
+
+# day6: java
+*.class
