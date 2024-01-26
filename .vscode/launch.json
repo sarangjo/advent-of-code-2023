@@ -5,6 +5,12 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "C#: advent-of-code Debug",
+      "type": "dotnet",
+      "request": "launch",
+      "projectPath": "${workspaceFolder}/advent-of-code-2023.csproj"
+    },
+    {
       "type": "node",
       "request": "launch",
       "name": "Day 5",

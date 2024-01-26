@@ -7,20 +7,35 @@ class Day7
         var lines = File.ReadLines("day7.txt");
 
         SortedSet<Hand> hands = [];
+        int i = 0;
+        Random r = new();
         foreach (var line in lines)
         {
             string[] parts = line.Split(' ');
-            hands.Add(new(parts[0], int.Parse(parts[1])));
+            Hand h = new(parts[0], long.Parse(parts[1]), Part.TWO);
+            hands.Add(h);
+
+            if (parts[0].Contains('J') && r.NextDouble() < 1.0 / 3.0)
+            {
+                Console.WriteLine(h);
+            }
+
+            i++;
         }
 
-        int sum = 0;
-        int rank = 1;
+        Console.WriteLine("------------------------------------\nRANKING\n--------------------------------");
+
+        long sum = 0;
+        long rank = 1;
         foreach (var h in hands)
         {
             sum += rank * h.bid;
             rank++;
+            if (rank % 3 == 0) Console.WriteLine(h);
         }
 
+        // Part 2:
+        // 248696167 - too low
         Console.WriteLine(sum);
     }
 }
@@ -30,7 +45,7 @@ enum Part
     ONE, TWO
 }
 
-abstract class Hand : IComparable<Hand>
+class Hand : IComparable<Hand>
 {
     public enum Type : int
     {
@@ -45,20 +60,26 @@ abstract class Hand : IComparable<Hand>
 
     public string cardOrder;
     public Type type = Type.HIGH_CARD;
-    public int bid;
+    public long bid;
 
-    public Hand(string cardOrder, int bid, Part part)
+    public Hand(string cardOrder, long bid, Part part)
     {
         this.cardOrder = cardOrder;
         this.bid = bid;
         switch (part)
         {
-            case Part.ONE: CalculateType1(cardOrder);
-            case Part.TWO: CalculateType2(cardOrder);
+            case Part.ONE: CalculateType1(cardOrder); break;
+            case Part.TWO: CalculateType2(cardOrder); break;
         }
+
     }
 
-    private Dictionary<char, int> CalculateType1(string cardOrder)
+    public override string ToString()
+    {
+        return "Hand: " + cardOrder + ", type: " + type;
+    }
+
+    private void CalculateType1(string cardOrder)
     {
         var cards = new Dictionary<char, int>();
 
@@ -99,8 +120,6 @@ abstract class Hand : IComparable<Hand>
                 }
             }
         }
-
-        return cards;
     }
 
     private void CalculateType2(string cardOrder)
@@ -150,7 +169,60 @@ abstract class Hand : IComparable<Hand>
             }
         }
 
-        return cards;
+        // Now update with j count
+        if (j >= 4)
+        {
+            type = Type.FIVE_OF_A_KIND;
+        }
+        else if (j == 3)
+        {
+            if (type == Type.ONE_PAIR)
+            {
+                type = Type.FIVE_OF_A_KIND;
+            }
+            else
+            {
+                type = Type.FOUR_OF_A_KIND;
+            }
+        }
+        else if (j == 2)
+        {
+            if (type == Type.THREE_OF_A_KIND)
+            {
+                type = Type.FIVE_OF_A_KIND;
+            }
+            else if (type == Type.ONE_PAIR)
+            {
+                type = Type.FOUR_OF_A_KIND;
+            }
+            else
+            {
+                type = Type.THREE_OF_A_KIND;
+            }
+        }
+        else if (j == 1)
+        {
+            if (type == Type.FOUR_OF_A_KIND)
+            {
+                type = Type.FIVE_OF_A_KIND;
+            }
+            else if (type == Type.THREE_OF_A_KIND)
+            {
+                type = Type.FOUR_OF_A_KIND;
+            }
+            else if (type == Type.ONE_PAIR)
+            {
+                type = Type.THREE_OF_A_KIND;
+            }
+            else if (type == Type.TWO_PAIR)
+            {
+                type = Type.FULL_HOUSE;
+            }
+            else
+            {
+                type = Type.ONE_PAIR;
+            }
+        }
     }
 
     public int CompareTo(Hand? other)
