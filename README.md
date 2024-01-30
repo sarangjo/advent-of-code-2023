@@ -36,3 +36,7 @@ https://raygun.com/blog/programming-languages/
     $ javac day6.java
     $ java day6
     ```
+7. C# (with .NET)
+    ```
+    $ dotnet run
+    ```
