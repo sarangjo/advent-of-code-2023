@@ -1,5 +1,3 @@
-using System.Security;
-
 class Day7
 {
     static void Main()
@@ -7,23 +5,11 @@ class Day7
         var lines = File.ReadLines("day7.txt");
 
         SortedSet<Hand> hands = [];
-        int i = 0;
-        Random r = new();
         foreach (var line in lines)
         {
             string[] parts = line.Split(' ');
-            Hand h = new(parts[0], long.Parse(parts[1]), Part.TWO);
-            hands.Add(h);
-
-            if (parts[0].Contains('J') && r.NextDouble() < 1.0 / 3.0)
-            {
-                Console.WriteLine(h);
-            }
-
-            i++;
+            hands.Add(new HandPart2(parts[0], long.Parse(parts[1])));
         }
-
-        Console.WriteLine("------------------------------------\nRANKING\n--------------------------------");
 
         long sum = 0;
         long rank = 1;
@@ -31,21 +17,13 @@ class Day7
         {
             sum += rank * h.bid;
             rank++;
-            if (rank % 3 == 0) Console.WriteLine(h);
         }
 
-        // Part 2:
-        // 248696167 - too low
         Console.WriteLine(sum);
     }
 }
 
-enum Part
-{
-    ONE, TWO
-}
-
-class Hand : IComparable<Hand>
+abstract class Hand : IComparable<Hand>
 {
     public enum Type : int
     {
@@ -62,24 +40,46 @@ class Hand : IComparable<Hand>
     public Type type = Type.HIGH_CARD;
     public long bid;
 
-    public Hand(string cardOrder, long bid, Part part)
+    public Hand(string cardOrder, long bid)
     {
         this.cardOrder = cardOrder;
         this.bid = bid;
-        switch (part)
-        {
-            case Part.ONE: CalculateType1(cardOrder); break;
-            case Part.TWO: CalculateType2(cardOrder); break;
-        }
 
+        CalculateType();
     }
+
+    protected abstract void CalculateType();
 
     public override string ToString()
     {
         return "Hand: " + cardOrder + ", type: " + type;
     }
 
-    private void CalculateType1(string cardOrder)
+    public int CompareTo(Hand? other)
+    {
+        if (type != other?.type)
+        {
+            return (type - other?.type) ?? 1;
+        }
+        for (int i = 0; i < 5; i++)
+        {
+            int thisVal = GetValue(cardOrder[i]);
+            int otherVal = GetValue(other.cardOrder[i]);
+            if (thisVal != otherVal)
+            {
+                return thisVal - otherVal;
+            }
+        }
+        return 0;
+    }
+
+    protected abstract int GetValue(char c);
+
+}
+
+class HandPart1(string cardOrder, long bid) : Hand(cardOrder, bid)
+{
+    protected override void CalculateType()
     {
         var cards = new Dictionary<char, int>();
 
@@ -122,7 +122,24 @@ class Hand : IComparable<Hand>
         }
     }
 
-    private void CalculateType2(string cardOrder)
+    protected override int GetValue(char c)
+    {
+        if (char.IsNumber(c)) return c - '0';
+        return c switch
+        {
+            'A' => 14,
+            'K' => 13,
+            'Q' => 12,
+            'J' => 11,
+            'T' => 10,
+            _ => 0,
+        };
+    }
+}
+
+class HandPart2(string cardOrder, long bid) : Hand(cardOrder, bid)
+{
+    protected override void CalculateType()
     {
         var cards = new Dictionary<char, int>();
         int j = 0;
@@ -225,25 +242,7 @@ class Hand : IComparable<Hand>
         }
     }
 
-    public int CompareTo(Hand? other)
-    {
-        if (type != other?.type)
-        {
-            return (type - other?.type) ?? 1;
-        }
-        for (int i = 0; i < 5; i++)
-        {
-            int thisVal = GetValue(cardOrder[i]);
-            int otherVal = GetValue(other.cardOrder[i]);
-            if (thisVal != otherVal)
-            {
-                return thisVal - otherVal;
-            }
-        }
-        return 0;
-    }
-
-    private static int GetValue(char c)
+    protected override int GetValue(char c)
     {
         if (char.IsNumber(c)) return c - '0';
         return c switch
@@ -251,8 +250,8 @@ class Hand : IComparable<Hand>
             'A' => 14,
             'K' => 13,
             'Q' => 12,
-            'J' => 11,
             'T' => 10,
+            'J' => 1,
             _ => 0,
         };
     }
