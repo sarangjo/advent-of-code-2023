@@ -15,3 +15,7 @@ out
 # day7: C#
 bin
 obj
+
+# day8: Swift
+*.exp
+*.lib

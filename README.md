@@ -40,3 +40,8 @@ https://raygun.com/blog/programming-languages/
     ```
     $ dotnet run
     ```
+8. Swift
+    ```
+    $ swiftc day8.swift
+    $ ./day8.exe
+    ```
