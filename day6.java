@@ -19,6 +19,7 @@ public class day6 {
         System.out.println("Part 2: " + part2(time, distance));
     }
 
+    // n * (t-n) > d  ===> boundaries = (t +/- sqrt(t^2 - 4d)) / 2
     private static long numWaysToBeat(long time, long distance) {
         double det = Math.sqrt(Math.pow(time, 2) - 4 * distance);
         long lo = (long) Math.ceil((time - det) / 2);
