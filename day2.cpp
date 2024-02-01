@@ -102,13 +102,7 @@ int processLine2(std::string_view s) {
 }
 
 int main() {
-  const fs::path cwd =
-      fs::path{std::getenv("HOME")} / "source" / "advent-of-code-2023";
-
-  std::cout << "Hello, world!\n" << std::endl;
-  exit(0);
-
-  std::ifstream infile{cwd / "day2.txt"};
+  std::ifstream infile{"day2.txt"};
   if (!infile) {
     std::cout << "Can't find file" << std::endl;
     return 1;

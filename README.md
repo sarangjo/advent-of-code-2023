@@ -1,10 +1,9 @@
 # Advent of Code 2023
 
-https://adventofcode.com/
+- https://adventofcode.com/
+- https://raygun.com/blog/programming-languages/
 
 ## How to run
-
-https://raygun.com/blog/programming-languages/
 
 1. Golang
     ```
@@ -48,3 +47,4 @@ https://raygun.com/blog/programming-languages/
     ```
     $ php day9.php
     ```
+10. Ruby
