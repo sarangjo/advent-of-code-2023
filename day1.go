@@ -34,7 +34,7 @@ const overlapsAllowed = true
 // Solution:
 // - 55604: no overlaps considered (sevenine = 77, nineight = 99) --> no
 // - 55612: overlaps considered (sevenine = 79, nineight = 98) --> no
-func processLine2(line string) int {
+func processLineBad(line string) int {
 	var first, last int
 	var translated int
 	seenFirst := false
@@ -101,7 +101,9 @@ type Active struct {
 // - 55488: wrong. bad and wrong and bad. lol.
 // - 55597: wrong. double letters: eeightabcthreee
 // - 55614: success! finally.
-func processLine3(line string) int {
+// Incredibly overly complicated solution. Problem of thinking bottom-up. Just do the fast approach
+// and check each number at each stage. Would have made the solution 5x smaller. Gosh.
+func processLine2(line string) int {
 	var first, last int
 	{
 		active := make([]string, 9)
@@ -190,30 +192,20 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// fmt.Println(processLine3("eeightthreee"))
-	// os.Exit(0)
-
-	// fmt.Println("Overlaps allowed?", overlapsAllowed)
-
-	// fmt.Println(processLine2("sevenine"))
-	// fmt.Println(processLine2("nineight"))
-	// fmt.Println(processLine2("nin4eigh5t"))
-	// os.Exit(1)
-
 	scanner := bufio.NewScanner(file)
-	sum := 0
-	idx := 0
+	sum1 := 0
+	sum2 := 0
+
 	for scanner.Scan() {
 		line := scanner.Text()
-		line2Res := processLine2(line)
-		line3Res := processLine3(line)
-		if line2Res != line3Res {
-			fmt.Println(idx, line, line2Res, line3Res)
-		}
-		sum += line3Res
-		idx++
+
+		part1Res := processLine(line)
+		part2Res := processLine2(line)
+
+		sum1 += part1Res
+		sum2 += part2Res
 	}
 
-	fmt.Println(sum)
-	fmt.Println(idx)
+	fmt.Println("Part 1:", sum1)
+	fmt.Println("Part 2:", sum2)
 }

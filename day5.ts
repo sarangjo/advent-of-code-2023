@@ -201,8 +201,8 @@ function part2(lines: string[]) {
 
 async function main() {
   const lines = (await fs.readFile("day5.txt")).toString().split("\n");
-  const lowest = part2(lines);
-  console.log("Lowest location:", lowest);
+  console.log("part 1:", part1(lines));
+  console.log("part 2:", part2(lines));
 }
 
 main();

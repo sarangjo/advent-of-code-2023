@@ -105,17 +105,25 @@ int main() {
   const fs::path cwd =
       fs::path{std::getenv("HOME")} / "source" / "advent-of-code-2023";
 
+  std::cout << "Hello, world!\n" << std::endl;
+  exit(0);
+
   std::ifstream infile{cwd / "day2.txt"};
   if (!infile) {
-    std::cerr << "Can't find file" << std::endl;
+    std::cout << "Can't find file" << std::endl;
     return 1;
   }
 
   std::string line;
-  int sum = 0;
+  int sum1 = 0;
+  int sum2 = 0;
   while (std::getline(infile, line)) {
-    const auto power = processLine2(line);
-    sum += power;
+    const auto opt_id = processLine1(line);
+    if (opt_id) {
+      sum1 += *opt_id;
+    }
+    sum2 += processLine2(line);
   }
-  std::cout << "sum: " << sum << std::endl;
+  std::cout << "Part 1: " << sum1 << std::endl;
+  std::cout << "Part 2: " << sum2 << std::endl;
 }

@@ -4,22 +4,25 @@ class Day7
     {
         var lines = File.ReadLines("day7.txt");
 
-        SortedSet<Hand> hands = [];
-        foreach (var line in lines)
+        foreach (var part in new int[] { 1, 2 })
         {
-            string[] parts = line.Split(' ');
-            hands.Add(new HandPart2(parts[0], long.Parse(parts[1])));
-        }
+            SortedSet<Hand> hands = [];
+            foreach (var line in lines)
+            {
+                string[] parts = line.Split(' ');
+                hands.Add(part == 1 ? new HandPart1(parts[0], long.Parse(parts[1])) : new HandPart2(parts[0], long.Parse(parts[1])));
+            }
 
-        long sum = 0;
-        long rank = 1;
-        foreach (var h in hands)
-        {
-            sum += rank * h.bid;
-            rank++;
-        }
+            long sum = 0;
+            long rank = 1;
+            foreach (var h in hands)
+            {
+                sum += rank * h.bid;
+                rank++;
+            }
 
-        Console.WriteLine(sum);
+            Console.WriteLine("part " + part + ": " + sum);
+        }
     }
 }
 

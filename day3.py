@@ -127,7 +127,10 @@ def get_gear_ratio(prev: str, cur: str, next: str, i):
 
 def main():
     with open("day3.txt") as f:
-        print("sum:", part2(f))
+        print("part 1:", part1(f))
+
+    with open("day3.txt") as f:
+        print("part 2:", part2(f))
 
 
 if __name__ == "__main__":

@@ -122,7 +122,4 @@ func part2(_ input: String) -> Int {
 var file = "day8.txt"
 var input = try String(contentsOfFile: file, encoding: .utf8)
 print("part 1 steps: \(part1(input))")
-
-file = "day8.txt"
-input = try String(contentsOfFile: file, encoding: .utf8)
 print("part 2 steps: \(part2(input))")

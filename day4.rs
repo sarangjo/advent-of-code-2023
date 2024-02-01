@@ -89,8 +89,14 @@ fn part2(lines: io::Lines<io::BufReader<File>>) -> u32 {
 }
 
 fn main() {
-    let file = File::open("./day4.txt").unwrap();
-    let lines = io::BufReader::new(file).lines();
-    let sum = part2(lines);
-    println!("Sum: {:?}", sum);
+    {
+        let file = File::open("./day4.txt").unwrap();
+        let lines = io::BufReader::new(file).lines();
+        println!("Part 1: {:?}", part1(lines));
+    }
+    {
+        let file = File::open("./day4.txt").unwrap();
+        let lines = io::BufReader::new(file).lines();
+        println!("Part 2: {:?}", part2(lines));
+    }
 }
