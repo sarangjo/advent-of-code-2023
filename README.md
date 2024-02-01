@@ -8,12 +8,11 @@ https://raygun.com/blog/programming-languages/
 
 1. Golang
     ```
-    $ go build day1.go
-    $ ./day1.exe
+    $ go run day1.go
     ```
-2. C++17
+2. C++17 (with MinGW)
     ```
-    $ g++ -o day2.exe day2.cpp
+    $ g++ -std=c++17 -o day2.exe day2.cpp
     $ ./day2.exe
     ```
 3. Python
