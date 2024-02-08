@@ -51,18 +51,17 @@
     ```
     $ ruby day10.rb
     ```
-12. Bash
-13. Perl
-14. Kotlin
-15. Lua
-16. Bash
-17. Powershell
-18. Objective-C
-19. R
-20. MATLAB
-21. C
-22. Julia
-23. Scala
-24. Haskell
-25. DART
-26. Zig
+11. Perl
+12. Kotlin
+13. Lua
+14. Scheme
+15. Powershell
+16. Objective-C
+17. R
+18. MATLAB
+19. C
+20. Julia
+21. Scala
+22. Haskell
+23. DART
+24. Zig
