@@ -48,18 +48,21 @@
     $ php day9.php
     ```
 10. Ruby
-11. Bash
-12. Perl
-13. Kotlin
-14. Lua
-15. Bash
-16. Powershell
-17. Objective-C
-18. R
-19. MATLAB
-20. C
-21. Julia
-22. Scala
-23. Haskell
-24. DART
-25. Zig
+    ```
+    $ ruby day10.rb
+    ```
+12. Bash
+13. Perl
+14. Kotlin
+15. Lua
+16. Bash
+17. Powershell
+18. Objective-C
+19. R
+20. MATLAB
+21. C
+22. Julia
+23. Scala
+24. Haskell
+25. DART
+26. Zig
