@@ -1,6 +1,6 @@
 require "set"
 
-file = File.open("sample10.txt")
+file = File.open("day10.txt")
 
 # `from` indicates which direction came from
 Location = Struct.new(:row, :col, :from)
@@ -37,13 +37,25 @@ def leave_start(loc)
 end
 
 $follow_pipe = {
-    '|' => ['U', 'D'],
+    '|' => ['D', 'U'],
     '-' => ['L', 'R'],
-    'L' => ['U', 'R'],
-    'J' => ['U', 'L'],
+    'L' => ['R', 'U'],
+    'J' => ['L', 'U'],
     '7' => ['D', 'L'],
     'F' => ['D', 'R'],
 }
+
+def invert(dir)
+    if dir == 'U'
+        return 'D'
+    elsif dir == 'D'
+        return 'U'
+    elsif dir == 'L'
+        return 'R'
+    elsif dir == 'R'
+        return 'L'
+    end
+end
 
 # Follow the pipe, avoiding loc.from
 def find_next(loc)
@@ -79,64 +91,80 @@ def part_1
         steps += 1
     end
 
-    print "Steps: " + steps.to_s
+    puts "Part 1: " + steps.to_s
 end
 
-def part_2
+def add_to_pipe(pipe, row, col, symbol)
+    pipe[row] = pipe.has_key?(row) ? pipe[row].add([col, symbol]) : [[col, symbol]].to_set
+end
+
+def build_pipe()
     # First, we collect the pipe locations row-wise
     pipe = {}
 
     # Add start
     locs = leave_start($start)
 
-    # Based on locs, figure out what start should be
-    dirs = locs.map
+    # Based on locs, figure out what start should be.
+    # First, extract the "from" for the two first steps.
+    dirs = locs.map { |loc| invert(loc.from) }.sort()
 
-    pipe[locs[0].row] = pipe.has_key?(locs[0].row) ? pipe[locs[0].row].add(locs[0].col) : SortedSet.new([locs[0].col])
-    pipe[locs[1].row] = pipe.has_key?(locs[1].row) ? pipe[locs[1].row].add(locs[1].col) : SortedSet.new([locs[1].col])
+    deciphered_start = $follow_pipe.find{ |key, val| val == dirs }
 
-    pipe[$start.row] = SortedSet.new([$start.col])
+    add_to_pipe(pipe, $start.row, $start.col, deciphered_start[0])
+    locs.each { |loc| add_to_pipe(pipe, loc.row, loc.col, $lines[loc.row][loc.col]) }
 
     while not loc_eq(locs) do
         locs[0] = find_next(locs[0])
         locs[1] = find_next(locs[1])
 
-        pipe[locs[0].row] = pipe.has_key?(locs[0].row) ? pipe[locs[0].row].add(locs[0].col) : SortedSet.new([locs[0].col])
-        pipe[locs[1].row] = pipe.has_key?(locs[1].row) ? pipe[locs[1].row].add(locs[1].col) : SortedSet.new([locs[1].col])
+        locs.each { |loc| add_to_pipe(pipe, loc.row, loc.col, $lines[loc.row][loc.col]) }
     end
 
-    pipe = pipe.sort_by { |key| key }.to_h
-
-    # Now we evaluate how many spaces are in between by row
-    inside_spots = 0
-    is_first = true
-    row_count = 0
-    pipe.each { |key, row|
-        if is_first then
-            is_first = false
-            next
-        end
-
-        inside = false
-        prev = -1
-        row.each { |col|
-            if inside then
-                row_count += (col - prev - 1)
-            end
-
-            inside = !inside
-            prev = col
-        }
-
-        inside_spots += row_count
-        row_count = 0
-    }
-
-    # Remove the last row
-    inside_spots -= row_count
-
-    puts "Inside spots: " + inside_spots.to_s
+    return pipe.sort_by { |key| key }.to_h
 end
 
-# part_1
+def count_spots(pipe)
+    # Now we evaluate how many spaces are in between by row
+    inside_spots = 0
+    pipe.each { |key, row|
+        row = row.sort_by { |pair| pair[0] }
+
+        state = :out
+        prev = -1
+        row.each { |pair|
+            col, val = pair
+
+            if state == :in then
+                inside_spots += (col - prev - 1)
+            end
+
+            if val == '|'
+                state = state == :out ? :in : :out
+            # Corners
+            elsif val == 'F'
+                state = state == :out ? :up : :down
+            elsif val == 'L'
+                state = state == :out ? :down : :up
+            elsif val == '7'
+                state = state == :up ? :out : :in
+            elsif val == 'J'
+                state = state == :up ? :in : :out
+            end
+
+            prev = col
+        }
+    }
+
+    return inside_spots
+end
+
+def part_2
+    pipe = build_pipe()
+    inside_spots = count_spots(pipe)
+
+    puts "Part 2: " + inside_spots.to_s
+end
+
+part_1
 part_2
