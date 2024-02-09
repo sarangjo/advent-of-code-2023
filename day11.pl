@@ -7,7 +7,7 @@ my @emptyCols = ();
 my @galaxyRows = ();
 my @galaxyCols = ();
 
-sub getEmptiesAndGalaxies {
+sub getEmptyColsAndGalaxies {
     my $fn = shift;
 
     my %occupiedCols = ();
@@ -53,24 +53,51 @@ sub getEmptiesAndGalaxies {
     }
 }
 
-getEmptiesAndGalaxies("sample11.txt");
+sub updateGalaxyCols {
+    my $colExpand = 0;
+
+    my $curEmptyColIdx = 0;
+    my $curSortedColIdx = 0;
+
+    # Sort cols but keep a hold of their original indices so we can rearrange
+    my @sortedIndices = sort { $galaxyCols[$a] <=> $galaxyCols[$b] } 0..$#galaxyCols;
+
+    print("sorted indices ", @sortedIndices, "\n");
+
+    # So now we iterate through galaxyCols via sortedIndices rather than a normal index
+    while ($curSortedColIdx < scalar(@sortedIndices) && $curEmptyColIdx < scalar(@emptyCols)) {
+        if ($galaxyCols[$sortedIndices[$curSortedColIdx]] < $emptyCols[$curEmptyColIdx]) {
+            # No empty col encountered, just update by current expansion rate
+            $galaxyCols[$sortedIndices[$curSortedColIdx]] += $colExpand;
+            $curSortedColIdx++;
+        } else {
+            # Empty col, bump colExpand
+            $colExpand++;
+            $curEmptyColIdx++;
+        }
+    }
+    # Fencepost
+    while ($curSortedColIdx < scalar(@sortedIndices)) {
+        # No more empties
+        $galaxyCols[$sortedIndices[$curSortedColIdx]] += $colExpand;
+        $curSortedColIdx++;
+    }
+}
+
+sub calculateAllDistances {
+}
+
+# Compute galaxies and empty columns - empty rows are already being taken into account
+getEmptyColsAndGalaxies("sample11.txt");
 
 print("galaxy rows ", @galaxyRows, "\n");
 print("galaxy cols ", @galaxyCols, "\n");
-print("empty rows ", @emptyRows, "\n");
 print("empty cols ", @emptyCols, "\n");
 
 # Now we expand and adjust each galaxy as needed
+updateGalaxyCols();
 
-my $rowExpand = 0;
-my $colExpand = 0;
+print("galaxy cols ", @galaxyCols, "\n");
 
-my $row = 0;
-my $col = 0;
-
-my $curEmptyRowIdx = 0;
-my $curEmptyColIdx = 0;
-
-while() {
-    # Do we need to bump
-}
+# Next, find the distance between each pair of galaxies and add them up
+calculateAllDistances();
