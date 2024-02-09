@@ -9,10 +9,10 @@
     ```
     $ go run day1.go
     ```
-2. C++17 (with MinGW)
+2. C++17 (with GCC)
     ```
-    $ g++ -std=c++17 -o day2.exe day2.cpp
-    $ ./day2.exe
+    $ g++ -std=c++17 -o day2[.exe] day2.cpp
+    $ ./day2
     ```
 3. Python
     ```
@@ -21,7 +21,7 @@
 4. Rust
     ```
     $ rustc day4.rs
-    $ ./day4.exe
+    $ ./day4
     ```
 5. Typescript (with NodeJS)
     ```
@@ -41,7 +41,7 @@
 8. Swift
     ```
     $ swiftc day8.swift
-    $ ./day8.exe
+    $ ./day8
     ```
 9. PHP
     ```
@@ -52,6 +52,9 @@
     $ ruby day10.rb
     ```
 11. Perl
+    ```
+    $ perl day11.pl
+    ```
 12. Kotlin
 13. Lua
 14. Scheme
