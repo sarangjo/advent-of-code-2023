@@ -3,6 +3,8 @@
 use strict;
 use warnings;
 
+# How much do we need to replace empty rows/cols by?
+my $emptyLength = 2;
 my @emptyCols = ();
 my @galaxyRows = ();
 my @galaxyCols = ();
@@ -14,6 +16,7 @@ sub getEmptyColsAndGalaxies {
 
     open(FH, '<', $fn);
 
+    # Number of columns in the file
     my $colCount = 0;
 
     my $row = 0;
@@ -25,10 +28,12 @@ sub getEmptyColsAndGalaxies {
         # Ignore \n at the end
         $colCount = length($_) - 1;
 
+        # Empty row!
         if ($col == -1) {
-            $row++;
+            $row += ($emptyLength - 1);
         }
 
+        # Find all galaxies in this row
         while ($col != -1) {
             # Galaxy found; add it
             push(@galaxyRows, $row);
@@ -43,13 +48,11 @@ sub getEmptyColsAndGalaxies {
         $row++;
     }
 
-    my $col = 0;
-    while ($col < $colCount) {
+    # Convert
+    for my $col (0..$colCount) {
         if (!exists($occupiedCols{"$col"})) {
             push(@emptyCols, $col);
         }
-
-        $col++;
     }
 }
 
@@ -70,7 +73,7 @@ sub updateGalaxyCols {
             $curSortedColIdx++;
         } else {
             # Empty col, bump colExpand
-            $colExpand++;
+            $colExpand += ($emptyLength - 1);
             $curEmptyColIdx++;
         }
     }
@@ -92,13 +95,25 @@ sub calculateAllDistances {
     return $sum;
 }
 
-# Compute galaxies and empty columns - empty rows are already being taken into account
-getEmptyColsAndGalaxies("day11.txt");
+sub fullSequence {
+    # Compute galaxies and empty columns - empty rows are already being taken into account
+    getEmptyColsAndGalaxies("sample11.txt");
 
-# Now we expand and adjust each galaxy as needed
-updateGalaxyCols();
+    # Now we expand and adjust each galaxy as needed
+    updateGalaxyCols();
 
-# Next, find the distance between each pair of galaxies and add them up
-my $sum = calculateAllDistances();
+    # Next, find the distance between each pair of galaxies and add them up
+    return calculateAllDistances();
+}
 
-print("part 1: $sum\n");
+my $part1 = fullSequence();
+print("part 1: $part1\n");
+
+# Reset for part 2
+$emptyLength = 1000000;
+@emptyCols = ();
+@galaxyRows = ();
+@galaxyCols = ();
+
+my $part2 = fullSequence();
+print("part 2: $part2\n");
