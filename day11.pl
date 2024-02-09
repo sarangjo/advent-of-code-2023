@@ -97,7 +97,7 @@ sub calculateAllDistances {
 
 sub fullSequence {
     # Compute galaxies and empty columns - empty rows are already being taken into account
-    getEmptyColsAndGalaxies("sample11.txt");
+    getEmptyColsAndGalaxies("day11.txt");
 
     # Now we expand and adjust each galaxy as needed
     updateGalaxyCols();
