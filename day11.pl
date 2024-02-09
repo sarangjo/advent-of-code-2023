@@ -62,8 +62,6 @@ sub updateGalaxyCols {
     # Sort cols but keep a hold of their original indices so we can rearrange
     my @sortedIndices = sort { $galaxyCols[$a] <=> $galaxyCols[$b] } 0..$#galaxyCols;
 
-    print("sorted indices ", @sortedIndices, "\n");
-
     # So now we iterate through galaxyCols via sortedIndices rather than a normal index
     while ($curSortedColIdx < scalar(@sortedIndices) && $curEmptyColIdx < scalar(@emptyCols)) {
         if ($galaxyCols[$sortedIndices[$curSortedColIdx]] < $emptyCols[$curEmptyColIdx]) {
@@ -85,19 +83,22 @@ sub updateGalaxyCols {
 }
 
 sub calculateAllDistances {
+    my $sum = 0;
+    for my $i (0..$#galaxyRows) {
+        for my $j ($i+1..$#galaxyRows) {
+            $sum += abs($galaxyRows[$j] - $galaxyRows[$i]) + abs($galaxyCols[$j] - $galaxyCols[$i]);
+        }
+    }
+    return $sum;
 }
 
 # Compute galaxies and empty columns - empty rows are already being taken into account
-getEmptyColsAndGalaxies("sample11.txt");
-
-print("galaxy rows ", @galaxyRows, "\n");
-print("galaxy cols ", @galaxyCols, "\n");
-print("empty cols ", @emptyCols, "\n");
+getEmptyColsAndGalaxies("day11.txt");
 
 # Now we expand and adjust each galaxy as needed
 updateGalaxyCols();
 
-print("galaxy cols ", @galaxyCols, "\n");
-
 # Next, find the distance between each pair of galaxies and add them up
-calculateAllDistances();
+my $sum = calculateAllDistances();
+
+print("part 1: $sum\n");
