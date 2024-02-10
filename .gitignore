@@ -1,21 +1,23 @@
 day*.txt
 *.exe
-*.js
 
 # day3: python
-env
+env/
 
 # day5: typescript
-node_modules
-out
+node_modules/
+out/
 
 # day6: java
 *.class
 
-# day7: C#
-bin
-obj
+# day7: c#
+bin/
+obj/
 
-# day8: Swift
+# day8: swift
 *.exp
 *.lib
+
+# day12: kotlin
+*.jar
