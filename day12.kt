@@ -49,7 +49,6 @@ fun processLine(parsed: String, line: String, segments: MutableList<Int>): Int {
             sum += processLine(parsed + "#".repeat(curSegment) + (if (notEnd) '.' else ""),
                     line.substring(curSegment + (if (notEnd) 1 else 0)),
                     segments)
-            // sum += processLine(consumedParsed, line.substring(consumedCurSegment), segments)
             segments.add(0, curSegment)
         }
     }
