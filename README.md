@@ -56,6 +56,10 @@
     $ perl day11.pl
     ```
 12. Kotlin
+    ```
+    $ kotlinc day12.kt -include-runtime -d day12.jar
+    $ java -jar day12.jar
+    ```
 13. Lua
 14. Scheme
 15. Powershell
