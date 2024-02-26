@@ -5,6 +5,17 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "type": "LuaHelper-Debug",
+      "request": "launch",
+      "name": "LuaHelper-DebugFile",
+      "luaPath": "",
+      "packagePath": [],
+      "luaFileExtension": "",
+      "connectionPort": 8818,
+      "stopOnEntry": true,
+      "useCHook": true
+    },
+    {
       "name": "C#: advent-of-code Debug",
       "type": "dotnet",
       "request": "launch",
