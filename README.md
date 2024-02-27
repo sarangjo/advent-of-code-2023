@@ -61,6 +61,9 @@
     $ java -jar day12.jar
     ```
 13. Lua
+    ```
+    $ lua day13.lua
+    ```
 14. Scheme
 15. Powershell
 16. Objective-C
