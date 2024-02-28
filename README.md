@@ -9,7 +9,7 @@
     ```
     $ go run day1.go
     ```
-2. C++17 (with GCC)
+2. C/C++17 (with GCC)
     ```
     $ g++ -std=c++17 -o day2[.exe] day2.cpp
     $ ./day2
@@ -64,14 +64,15 @@
     ```
     $ lua day13.lua
     ```
-14. Scheme
+14. Racket
 15. Powershell
 16. Objective-C
 17. R
 18. MATLAB
-19. C
-20. Julia
-21. Scala
-22. Haskell
-23. DART
-24. Zig
+19. Julia
+20. Scala
+21. Haskell
+22. DART
+23. Zig
+24. Erlang
+25. Ada
