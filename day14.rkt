@@ -5,20 +5,19 @@
     (define rock-positions (make-vector (string-length (call-with-input-file filename
                 (lambda (in)
                 (read-line in)))) 0))
-    (printf "Vector length: ~a\n" (vector-length rock-positions))
 
     ; start iteration
     (define in (open-input-file filename))
 
     (define-values (total-lines total-weight total-rock-count) (
         for/fold (
-                ; accumulators
-                [line-number 0]
-                [total-weight 0]
-                [rock-count 0])
-                ; top-level iterator
-                ([line (in-lines in)]
-                 #:break (eof-object? line))
+            ; accumulators
+            [line-number 0]
+            [total-weight 0]
+            [rock-count 0])
+            ; top-level iterator
+            ([line (in-lines in)]
+                #:break (eof-object? line))
             ; body of for-loop
             (define-values (line-weight line-rock-count) (
                 for/fold (
