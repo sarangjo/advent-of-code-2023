@@ -65,6 +65,9 @@
     $ lua day13.lua
     ```
 14. Racket
+    ```
+    $ racket day14.rkt
+    ```
 15. Powershell
 16. Objective-C
 17. R

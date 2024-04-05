@@ -168,5 +168,5 @@
     ; calculate the load for that cycle (sub1 because we start at cycle 2)
     (calculate-load (list-ref full-rock-locs (sub1 (+ offset match))) (vector-length grid)))
 
-; (printf "part1: ~a\n" (part1 "day14.txt"))
+(printf "part1: ~a\n" (part1 "day14.txt"))
 (printf "part2: ~a\n" (part2 "day14.txt"))
