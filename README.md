@@ -69,13 +69,16 @@
     $ racket day14.rkt
     ```
 15. Powershell
-16. Objective-C
-17. R
-18. MATLAB
-19. Julia
-20. Scala
-21. Haskell
-22. DART
-23. Zig
-24. Erlang
-25. Ada
+    ```
+    $ pwsh day15.ps1
+    ```
+17. Objective-C
+18. R
+19. MATLAB
+20. Julia
+21. Scala
+22. Haskell
+23. DART
+24. Zig
+25. Erlang
+26. Ada
