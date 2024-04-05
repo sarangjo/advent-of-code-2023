@@ -4,6 +4,9 @@ day*.txt
 # day3: python
 env/
 
+# day4: rust
+*.pdb
+
 # day5: typescript
 node_modules/
 out/
