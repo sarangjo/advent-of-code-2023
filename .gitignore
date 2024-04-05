@@ -3,6 +3,7 @@ day*.txt
 
 # day3: python
 env/
+__pycache__/
 
 # day4: rust
 *.pdb
@@ -24,3 +25,6 @@ obj/
 
 # day12: kotlin
 *.jar
+
+# day16: d
+*.obj
