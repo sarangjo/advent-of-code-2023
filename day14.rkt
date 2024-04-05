@@ -53,4 +53,79 @@
     (- (* total-lines total-rock-count) total-weight)
 )
 
-(printf "part1: ~a\n" (part1 "day14.txt"))
+(define (print-grid grid)
+    (for ([row (in-vector grid)])
+        (printf "~a\n" row))
+    (printf "\n"))
+
+(define (cycle grid)
+    (print-grid grid)
+
+    ; Move north
+    (for ([j (in-range (vector-length grid))])
+        (for/fold ([destination 0]) ([i (in-naturals)] [row (in-vector grid)])
+            (cond
+                [(char=? (string-ref row j) #\O)
+                    (string-set! (vector-ref grid destination) j #\O)
+                    (unless (= destination i)
+                        (string-set! (vector-ref grid i) j #\.))
+                    (add1 destination)]
+                [(char=? (string-ref row j) #\#)
+                    (add1 i)]
+                [else destination])))
+
+    (print-grid grid)
+
+    ; Move west
+    (for ([i (in-naturals)] [row (in-vector grid)])
+        (for/fold ([destination 0]) ([j (in-naturals)] [cell (in-string row)])
+            (cond
+                [(char=? cell #\O)
+                    (string-set! (vector-ref grid i) destination #\O)
+                    (unless (= destination j)
+                        (string-set! (vector-ref grid i) j #\.))
+                    (add1 destination)]
+                [(char=? cell #\#)
+                    (add1 j)]
+                [else destination])))
+
+    (print-grid grid)
+
+    ; Move south
+    (for ([j (in-range (vector-length grid))])
+        (for/fold ([destination (sub1 (vector-length grid))]) ([i (in-range (sub1 (vector-length grid)) -1 -1)])
+            ; (printf "i ~a j ~a destination ~a\n" i j destination)
+            (cond
+                [(char=? (string-ref (vector-ref grid i) j) #\O)
+                    (string-set! (vector-ref grid destination) j #\O)
+                    (unless (= destination i)
+                        (string-set! (vector-ref grid i) j #\.))
+                    (sub1 destination)]
+                [(char=? (string-ref (vector-ref grid i) j) #\#)
+                    (sub1 i)]
+                [else destination])))
+
+    (print-grid grid)
+
+    ; Move east
+    (for ([i (in-naturals)] [row (in-vector grid)])
+        (for/fold ([destination (sub1 (vector-length grid))]) ([j (in-range (sub1 (vector-length grid)) -1 -1)])
+            (cond
+                [(char=? (string-ref row j) #\O)
+                    (string-set! (vector-ref grid i) destination #\O)
+                    (unless (= destination j)
+                        (string-set! (vector-ref grid i) j #\.))
+                    (sub1 destination)]
+                [(char=? (string-ref row j) #\#)
+                    (sub1 j)]
+                [else destination])))
+
+    (print-grid grid)
+
+    ; Don't return anything... or return grid maybe?
+    (void))
+
+(define (part2 filename)
+    ; (printf "part1: ~a\n" (part1 "day14.txt"))
+    (define grid (list->vector (file->lines "sample14.txt")))
+    (cycle grid))
