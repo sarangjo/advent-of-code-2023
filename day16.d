@@ -2,6 +2,7 @@ import std.stdio;
 import std.exception;
 import std.container : DList;
 import std.typecons;
+import std.format;
 
 class GridLoc {
     int row, col;
@@ -36,6 +37,10 @@ class Beam : GridLoc {
     override bool opEquals(Object o) {
         Beam oth = cast(Beam) o;
         return oth && row == oth.row && col == oth.col && dir == oth.dir;
+    }
+
+    override string toString() {
+        return format("(%d,%d,%c)", this.row, this.col, this.dir);
     }
 };
 
@@ -78,8 +83,6 @@ ulong part1(string filename) {
     while (!beams.empty()) {
         auto cur = beams.removeAny();
         auto action = grid[cur.row][cur.col];
-
-        // writef("cur %d,%d; dir %c; action %c\n", cur.row, cur.col, cur.dir, action);
 
         final switch (action) {
             case '.':
@@ -147,6 +150,102 @@ ulong part1(string filename) {
     return energized_pruned.length;
 }
 
+Beam get_next(string[] grid, Beam beam) {
+    Beam new_beam = null;
+    if (beam.dir == 'u' && beam.row > 0) {
+        new_beam = new Beam(beam.row - 1, beam.col, beam.dir);
+    } else if (beam.dir == 'l' && beam.col > 0) {
+        new_beam = new Beam(beam.row, beam.col - 1, beam.dir);
+    } else if (beam.dir == 'd' && beam.row < grid.length - 1) {
+        new_beam = new Beam(beam.row + 1, beam.col, beam.dir);
+    } else if (beam.dir == 'r' && beam.col < grid.length - 1) {
+        new_beam = new Beam(beam.row, beam.col + 1, beam.dir);
+    }
+
+    return new_beam;
+}
+
+void get_full_path(string[] grid, Beam b, ref bool[Beam] path, ref bool[Beam][Beam] memo) {
+    if (b is null) {
+        writeln("Hit null!");
+        return;
+    }
+    auto exists = b in path;
+    if (exists) {
+        writeln("Hit repeat!");
+        return;
+    }
+
+    writef("Currently on: %s\n", b.toString());
+
+    // Okay, do we have a path ready for this particular beam location?
+    auto memo_exists = b in memo;
+    if (memo_exists !is null) {
+        auto memoized_path = memo[b];
+
+        // We have the memo! We're good. No more recursion needed
+        foreach (new_beam; memoized_path) {
+            path[new_beam] = true;
+        }
+        return;
+    }
+
+    path[b] = true;
+
+    auto action = grid[b.row][b.col];
+
+    if (action == '.' ||
+            (action == '-' && (b.dir == 'l' || b.dir == 'r')) ||
+            (action == '|' && (b.dir == 'u' || b.dir == 'd'))) {
+        get_full_path(grid, get_next(grid, b), path, memo);
+    }
+    if ((action == '/' && b.dir == 'r') ||
+            (action == '\\' && b.dir == 'l') ||
+            (action == '|' && (b.dir == 'l' || b.dir == 'r'))) {
+        get_full_path(grid, get_next(grid, new Beam(b.row, b.col, 'u')), path, memo);
+    }
+    if ((action == '/' && b.dir == 'd') ||
+            (action == '\\' && b.dir == 'u') ||
+            (action == '-' && (b.dir == 'u' || b.dir == 'd'))) {
+        get_full_path(grid, get_next(grid, new Beam(b.row, b.col, 'l')), path, memo);
+    }
+    if ((action == '/' && b.dir == 'l') ||
+            (action == '\\' && b.dir == 'r') ||
+            (action == '|' && (b.dir == 'l' || b.dir == 'r'))) {
+        get_full_path(grid, get_next(grid, new Beam(b.row, b.col, 'd')), path, memo);
+    }
+    if ((action == '/' && b.dir == 'u') ||
+            (action == '\\' && b.dir == 'd') ||
+            (action == '-' && (b.dir == 'u' || b.dir == 'd'))) {
+        get_full_path(grid, get_next(grid, new Beam(b.row, b.col, 'r')), path, memo);
+    }
+
+    // Memoize the path for this beam location
+    memo[b] = path.dup();
+}
+
+// In order to evaluate the best starting point, we need memoize the beam path at every particular
+// spot. Luckily the beam at each spot is deterministic, so at most we have 110 * 110 * 4 items in
+// the map
+ulong part2(string filename) {
+    string[] grid = parse_grid(filename);
+
+    // Memoize the path for every given Beam
+    bool[Beam][Beam] memo;
+
+    bool[Beam] energized;
+    get_full_path(grid, new Beam(0, 0, 'r'), energized, memo);
+
+    foreach(b; energized.keys) {
+        writef("%s\n", b);
+    }
+
+    writef("AA count: %d\n", energized.length);
+
+    return 0;
+}
+
 void main() {
-    writef("part1: %d\n", part1("day16.txt"));
+    // writef("part1: %d\n", part1("day16.txt"));
+    part2("sample16.txt");
 }
