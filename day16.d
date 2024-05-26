@@ -56,11 +56,42 @@ string[] parse_grid(string filename) {
     return grid;
 }
 
+// Eliminate duplicates that only differ by direction
+ulong get_true_energized_count(bool[Beam] energized) {
+    bool[GridLoc] energized_pruned;
+    foreach (b; energized.keys) {
+        energized_pruned[new GridLoc(b.row, b.col)] = true;
+    }
+
+    return energized_pruned.length;
+}
+
 ulong part1(string filename) {
     string[] grid = parse_grid(filename);
-
-    auto beams = DList!Beam(new Beam(0, 0, 'r'));
     bool[Beam] energized;
+
+    get_full_path_iter(grid, new Beam(0, 0, 'r'), energized);
+
+    return get_true_energized_count(energized);
+}
+
+Beam get_next(string[] grid, Beam beam) {
+    Beam new_beam = null;
+    if (beam.dir == 'u' && beam.row > 0) {
+        new_beam = new Beam(beam.row - 1, beam.col, beam.dir);
+    } else if (beam.dir == 'l' && beam.col > 0) {
+        new_beam = new Beam(beam.row, beam.col - 1, beam.dir);
+    } else if (beam.dir == 'd' && beam.row < grid.length - 1) {
+        new_beam = new Beam(beam.row + 1, beam.col, beam.dir);
+    } else if (beam.dir == 'r' && beam.col < grid.length - 1) {
+        new_beam = new Beam(beam.row, beam.col + 1, beam.dir);
+    }
+
+    return new_beam;
+}
+
+void get_full_path_iter(string[] grid, Beam start, ref bool[Beam] energized) {
+    auto beams = DList!Beam(start);
 
     void add_next(Beam beam) {
         Beam new_beam = null;
@@ -140,112 +171,46 @@ ulong part1(string filename) {
 
         energized[cur] = true;
     }
-
-    // Eliminate duplicates that only differ by direction
-    bool[GridLoc] energized_pruned;
-    foreach (b; energized.keys) {
-        energized_pruned[new GridLoc(b.row, b.col)] = true;
-    }
-
-    return energized_pruned.length;
 }
 
-Beam get_next(string[] grid, Beam beam) {
-    Beam new_beam = null;
-    if (beam.dir == 'u' && beam.row > 0) {
-        new_beam = new Beam(beam.row - 1, beam.col, beam.dir);
-    } else if (beam.dir == 'l' && beam.col > 0) {
-        new_beam = new Beam(beam.row, beam.col - 1, beam.dir);
-    } else if (beam.dir == 'd' && beam.row < grid.length - 1) {
-        new_beam = new Beam(beam.row + 1, beam.col, beam.dir);
-    } else if (beam.dir == 'r' && beam.col < grid.length - 1) {
-        new_beam = new Beam(beam.row, beam.col + 1, beam.dir);
-    }
-
-    return new_beam;
-}
-
-void get_full_path(string[] grid, Beam b, ref bool[Beam] path, ref bool[Beam][Beam] memo) {
-    if (b is null) {
-        writeln("Hit null!");
-        return;
-    }
-    auto exists = b in path;
-    if (exists) {
-        writeln("Hit repeat!");
-        return;
-    }
-
-    writef("Currently on: %s\n", b.toString());
-
-    // Okay, do we have a path ready for this particular beam location?
-    auto memo_exists = b in memo;
-    if (memo_exists !is null) {
-        auto memoized_path = memo[b];
-
-        // We have the memo! We're good. No more recursion needed
-        foreach (new_beam; memoized_path) {
-            path[new_beam] = true;
-        }
-        return;
-    }
-
-    path[b] = true;
-
-    auto action = grid[b.row][b.col];
-
-    if (action == '.' ||
-            (action == '-' && (b.dir == 'l' || b.dir == 'r')) ||
-            (action == '|' && (b.dir == 'u' || b.dir == 'd'))) {
-        get_full_path(grid, get_next(grid, b), path, memo);
-    }
-    if ((action == '/' && b.dir == 'r') ||
-            (action == '\\' && b.dir == 'l') ||
-            (action == '|' && (b.dir == 'l' || b.dir == 'r'))) {
-        get_full_path(grid, get_next(grid, new Beam(b.row, b.col, 'u')), path, memo);
-    }
-    if ((action == '/' && b.dir == 'd') ||
-            (action == '\\' && b.dir == 'u') ||
-            (action == '-' && (b.dir == 'u' || b.dir == 'd'))) {
-        get_full_path(grid, get_next(grid, new Beam(b.row, b.col, 'l')), path, memo);
-    }
-    if ((action == '/' && b.dir == 'l') ||
-            (action == '\\' && b.dir == 'r') ||
-            (action == '|' && (b.dir == 'l' || b.dir == 'r'))) {
-        get_full_path(grid, get_next(grid, new Beam(b.row, b.col, 'd')), path, memo);
-    }
-    if ((action == '/' && b.dir == 'u') ||
-            (action == '\\' && b.dir == 'd') ||
-            (action == '-' && (b.dir == 'u' || b.dir == 'd'))) {
-        get_full_path(grid, get_next(grid, new Beam(b.row, b.col, 'r')), path, memo);
-    }
-
-    // Memoize the path for this beam location
-    memo[b] = path.dup();
-}
-
-// In order to evaluate the best starting point, we need memoize the beam path at every particular
-// spot. Luckily the beam at each spot is deterministic, so at most we have 110 * 110 * 4 items in
-// the map
 ulong part2(string filename) {
     string[] grid = parse_grid(filename);
 
-    // Memoize the path for every given Beam
-    bool[Beam][Beam] memo;
+    ulong best = 0;
 
-    bool[Beam] energized;
-    get_full_path(grid, new Beam(0, 0, 'r'), energized, memo);
-
-    foreach(b; energized.keys) {
-        writef("%s\n", b);
+    // Go through all of the grid entries
+    Beam[] starts = new Beam[grid.length * 4];
+    // top
+    for (int i = 0; i < grid.length; i++) {
+        starts[i] = new Beam(0, i, 'd');
+    }
+    // right
+    for (int i = 0; i < grid.length; i++) {
+        starts[grid.length + i] = new Beam(i, cast(int) grid.length - 1, 'l');
+    }
+    // bot
+    for (int i = 0; i < grid.length; i++) {
+        starts[grid.length * 2 + i] = new Beam(cast(int) grid.length - 1, i, 'u');
+    }
+    // left
+    for (int i = 0; i < grid.length; i++) {
+        starts[grid.length * 3 + i] = new Beam(i, 0, 'r');
     }
 
-    writef("AA count: %d\n", energized.length);
+    foreach (start; starts) {
+        bool[Beam] energized;
+        get_full_path_iter(grid, start, energized);
 
-    return 0;
+        ulong true_count = get_true_energized_count(energized);
+        if (true_count > best) {
+            best = true_count;
+        }
+    }
+
+    return best;
 }
 
 void main() {
-    // writef("part1: %d\n", part1("day16.txt"));
-    part2("sample16.txt");
+    writef("part1: %d\n", part1("day16.txt"));
+    writef("part2: %d\n", part2("day16.txt"));
 }

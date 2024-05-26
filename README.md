@@ -73,6 +73,9 @@
     $ pwsh day15.ps1
     ```
 16. D
+    ```
+    $ rdmd day16.d
+    ```
 17. R
 18. MATLAB
 19. Julia
