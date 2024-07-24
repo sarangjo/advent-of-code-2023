@@ -77,6 +77,9 @@
     $ rdmd day16.d
     ```
 17. R
+    ```
+    $ Rscript day17.r
+    ```
 18. MATLAB
 19. Julia
 20. Scala
