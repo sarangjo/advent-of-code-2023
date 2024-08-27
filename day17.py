@@ -5,9 +5,9 @@ from typing import Dict, List, Tuple
 
 class HeapItem:
     loc: Tuple[int, int]
-    priority: int
+    priority: float
 
-    def __init__(self, loc: Tuple[int, int], priority: int) -> None:
+    def __init__(self, loc: Tuple[int, int], priority: float) -> None:
         self.loc = loc
         self.priority = priority
 
@@ -96,7 +96,7 @@ class MinHeap:
 
         return ret
 
-    def decrease_priority(self, loc: Tuple, p: int) -> bool:
+    def decrease_priority(self, loc: Tuple, p: float) -> bool:
         try:
             idx = self._indexMap[loc]
         except:
@@ -110,17 +110,18 @@ class MinHeap:
         self._bubble_up(idx)
 
 
-def main2():
+def main():
     with open("sample17.txt") as f:
         lines = f.readlines()
 
-    # 1. Set of all unvisited nodes
-    unvisited = PriorityQueue()
+    # Data structures
+    unvisited = MinHeap()
     visited = {}
 
+    # Fill up unvisited with all nodes
     for i in range(len(lines)):
         for j in range(len(lines)):
-            unvisited.put((0 if i == 0 and j == 0 else math.inf, (i, j)))
+            unvisited.insert(HeapItem((i, j), 0 if i == 0 and j == 0 else math.inf))
 
     while True:
         cur = unvisited.get()
@@ -137,18 +138,6 @@ def main2():
         # Mark as visited
         visited[cur[1]] = True
 
-
-def main():
-    h = MinHeap()
-
-    h.insert(HeapItem((0, 0), 4))
-    h.insert(HeapItem((0, 1), 7))
-    h.insert(HeapItem((1, 1), 2))
-    h.insert(HeapItem((1, 0), 3))
-
-    h.decrease_priority((0, 1), 1)
-
-    print(h.pop())
 
 if __name__ == "__main__":
     main()
