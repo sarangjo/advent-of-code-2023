@@ -1,29 +1,63 @@
 #!/usr/bin/env python
 import math
-from queue import PriorityQueue
 from typing import Dict, List, Tuple
 
-class HeapItem:
-    loc: Tuple[int, int]
-    distance: float
-    path: List[str]
 
-    def __init__(self, loc: Tuple[int, int], distance: float) -> None:
+class Node:
+    loc: Tuple[int, int]
+    last_dir: str
+
+    def __init__(self, loc: Tuple[int, int], last_dir: str) -> None:
         self.loc = loc
-        self.distance = distance
-        self.path = []
+        self.last_dir = last_dir
+
+    @staticmethod
+    def from_node(n: 'Node', direction: str) -> None:
+        loc = None
+        if direction == 'U':
+            loc = (n.loc[0] - 1, n.loc[1])
+        elif direction == 'R':
+            loc = (n.loc[0], n.loc[1] + 1)
+        elif direction == 'D':
+            loc = (n.loc[0] + 1, n.loc[1])
+        else:  # L
+            loc = (n.loc[0], n.loc[1] - 1)
+
+        return Node(loc, n.last_dir + direction if n.last_dir == direction else direction)
+
+    def __eq__(self, value: object) -> bool:
+        return self.loc == value.loc and self.last_dir == value.last_dir
+
+    def __hash__(self) -> int:
+        return hash((self.loc[0], self.loc[1], self.last_dir))
 
     def __str__(self) -> str:
-        return f"({self.loc[0]}, {self.loc[1]}): {self.distance}{"" if len(self.path) == 0 else "; " + "".join(self.path)}"
+        return f"({self.loc[0]}, {self.loc[1]}){"" if len(self.last_dir) == 0 else " " + self.last_dir}"
+
+
+class HeapItem:
+    node: Node
+    priority: float
+
+    def __init__(self, node: Node, priority: float) -> None:
+        self.node = node
+        self.priority = priority
+
+    def __str__(self) -> str:
+        return f"{self.node}: {self.priority}"
 
     def __repr__(self) -> str:
         return str(self)
 
     def cant_go(self) -> str:
-        for dir in ['U', 'R', 'D', 'L']:
-            if self.path[-3:] == [dir] * 3:
-                return dir
-        return 'X'
+        cg = []
+        if len(self.node.last_dir) > 0:
+            cg.append('U' if self.node.last_dir[-1] == 'D' else 'R' if self.node.last_dir[-1]
+                      == 'L' else 'D' if self.node.last_dir[-1] == 'U' else 'L')
+        for direction in ['U', 'R', 'D', 'L']:
+            if self.node.last_dir[-3:] == direction * 3:
+                cg.append(direction)
+        return cg
 
 
 # Let's build our own heap that has efficient operations that we care about: insert, pop, update
@@ -32,7 +66,7 @@ class MinHeap:
     _elements: List[HeapItem] = []
 
     # Index into the array is identified by this dict
-    _indexMap: Dict[Tuple, int] = {}
+    _indexMap: Dict[Node, int] = {}
 
     def _parent(idx: int) -> int:
         return int((idx - 1) / 2)
@@ -47,14 +81,14 @@ class MinHeap:
         self._elements[b] = temp
 
         # Update indexMap
-        self._indexMap[self._elements[a].loc] = a
-        self._indexMap[self._elements[b].loc] = b
+        self._indexMap[self._elements[a].node] = a
+        self._indexMap[self._elements[b].node] = b
 
     def _bubble_up(self, idx: int):
         # Is the child smaller than the parent?
         parent = MinHeap._parent(idx)
 
-        while idx != parent and parent >= 0 and parent < len(self._elements) and self._elements[parent].distance > self._elements[idx].distance:
+        while idx != parent and parent >= 0 and parent < len(self._elements) and self._elements[parent].priority > self._elements[idx].priority:
             # Swap idx and parent
             self._swap(idx, parent)
 
@@ -65,7 +99,7 @@ class MinHeap:
         # Add element at the end
         self._elements.append(item)
         idx = len(self._elements) - 1
-        self._indexMap[item.loc] = idx
+        self._indexMap[item.node] = idx
 
         # Bubble up!
         self._bubble_up(idx)
@@ -77,9 +111,9 @@ class MinHeap:
             # Check children
             smallest = idx
 
-            if left < len(self._elements) and self._elements[left].distance < self._elements[smallest].distance:
+            if left < len(self._elements) and self._elements[left].priority < self._elements[smallest].priority:
                 smallest = left
-            if right < len(self._elements) and self._elements[right].distance < self._elements[smallest].distance:
+            if right < len(self._elements) and self._elements[right].priority < self._elements[smallest].priority:
                 smallest = right
 
             if smallest == idx:
@@ -101,31 +135,31 @@ class MinHeap:
         # Insert last element into front and bubble down
         new_root = self._elements.pop()
         self._elements[0] = new_root
-        del self._indexMap[ret.loc]
-        self._indexMap[new_root.loc] = 0
+        del self._indexMap[ret.node]
+        self._indexMap[new_root.node] = 0
 
         # Is the parent larger than the child?
         self._bubble_down(0)
 
         return ret
 
-    def decrease_distance(self, loc: Tuple, p: float) -> bool:
+    def decrease_priority(self, node: Node, p: float) -> bool:
         try:
-            idx = self._indexMap[loc]
+            idx = self._indexMap[node]
         except:
             return False
 
-        if p >= self._elements[idx].distance:
+        if p >= self._elements[idx].priority:
             return False
 
-        # Reduce distance and bubble up
-        self._elements[idx].distance = p
+        # Reduce priority and bubble up
+        self._elements[idx].priority = p
         self._bubble_up(idx)
 
         return True
 
-    def update_path(self, loc: Tuple, cur: HeapItem, next_dir: str):
-        self._elements[self._indexMap[loc]].path = cur.path + [next_dir]
+    # def update_path(self, node: Node):
+    #     self._elements[self._indexMap[node]].path = cur.path + [next_dir]
 
 
 def main():
@@ -139,38 +173,39 @@ def main():
     # Fill up unvisited with all nodes
     for i in range(len(lines)):
         for j in range(len(lines)):
-            unvisited.insert(HeapItem((i, j), 0 if i == 0 and j == 0 else math.inf))
+            unvisited.insert(HeapItem(Node(loc=(i, j), last_dir=""),
+                             0 if i == 0 and j == 0 else math.inf))
 
     while True:
-        # Get the smallest distance neighbor
+        # Get the smallest priority neighbor
         cur = unvisited.pop()
 
-        if not cur or cur.distance == math.inf:
+        if not cur or cur.priority == math.inf:
             break
 
         # Consider all neighbors
-        neighbors = []
+        neighbors: List[Node] = []
 
         # - U
-        if cur.loc[0] != 0 and (cur.loc[0] - 1, cur.loc[1]) not in visited and cur.cant_go() != 'U':
-            neighbors.append(((cur.loc[0] - 1, cur.loc[1]), 'U'))
+        if cur.node.loc[0] != 0 and (cur.node.loc[0] - 1, cur.node.loc[1]) not in visited and cur.cant_go() != 'U':
+            neighbors.append(Node.from_node((cur.node.loc[0] - 1, cur.node.loc[1]), 'U'))
         # - R
-        if cur.loc[1] != len(lines) - 1 and (cur.loc[0], cur.loc[1] + 1) not in visited and cur.cant_go() != 'R':
-            neighbors.append(((cur.loc[0], cur.loc[1] + 1), 'R'))
+        if cur.node.loc[1] != len(lines) - 1 and (cur.node.loc[0], cur.node.loc[1] + 1) not in visited and cur.cant_go() != 'R':
+            neighbors.append(Node.from_node((cur.node.loc[0], cur.node.loc[1] + 1), 'R'))
         # - D
-        if cur.loc[0] != len(lines) - 1 and (cur.loc[0] + 1, cur.loc[1]) not in visited and cur.cant_go() != 'D':
-            neighbors.append(((cur.loc[0] + 1, cur.loc[1]), 'D'))
+        if cur.node.loc[0] != len(lines) - 1 and (cur.node.loc[0] + 1, cur.node.loc[1]) not in visited and cur.cant_go() != 'D':
+            neighbors.append(Node.from_node((cur.node.loc[0] + 1, cur.node.loc[1]), 'D'))
         # - L
-        if cur.loc[1] != 0 and (cur.loc[0], cur.loc[1] - 1) not in visited and cur.cant_go() != 'L':
-            neighbors.append(((cur.loc[0], cur.loc[1] - 1), 'L'))
+        if cur.node.loc[1] != 0 and (cur.node.loc[0], cur.node.loc[1] - 1) not in visited and cur.cant_go() != 'L':
+            neighbors.append(Node.from_node((cur.node.loc[0], cur.node.loc[1] - 1), 'L'))
 
         for n in neighbors:
             # Have we found a better path?
-            if unvisited.decrease_distance(n[0], cur.distance + int(lines[n[0][0]][n[0][1]])):
-                unvisited.update_path(n[0], cur, n[1])
+            unvisited.decrease_priority(n, cur.priority + int(lines[n[0][0]][n[0][1]]))
+            # unvisited.update_path(n[0], cur, n[1])
 
-        # Mark as visited
-        visited[cur.loc] = (cur.distance, cur.path)
+            # Mark as visited
+        visited[cur.node] = cur.priority  # , cur.path)
 
     print(visited[(len(lines) - 1, len(lines) - 1)])
 
