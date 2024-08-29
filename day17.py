@@ -143,23 +143,18 @@ class MinHeap:
 
         return ret
 
-    def decrease_priority(self, node: Node, p: float) -> bool:
-        try:
+    def insert_or_decrease_priority(self, node: Node, p: float):
+        if node in self._indexMap:
             idx = self._indexMap[node]
-        except:
-            return False
+            if p >= self._elements[idx].priority:
+                return
 
-        if p >= self._elements[idx].priority:
-            return False
-
-        # Reduce priority and bubble up
-        self._elements[idx].priority = p
-        self._bubble_up(idx)
-
-        return True
-
-    # def update_path(self, node: Node):
-    #     self._elements[self._indexMap[node]].path = cur.path + [next_dir]
+            # Reduce priority and bubble up
+            self._elements[idx].priority = p
+            self._bubble_up(idx)
+        else:
+            # Insert new node
+            self.insert(HeapItem(node, p))
 
 
 def main():
@@ -168,13 +163,10 @@ def main():
 
     # Data structures
     unvisited = MinHeap()
-    visited = {}
+    visited: Dict[Node, int] = {}
 
-    # Fill up unvisited with all nodes
-    for i in range(len(lines)):
-        for j in range(len(lines)):
-            unvisited.insert(HeapItem(Node(loc=(i, j), last_dir=""),
-                             0 if i == 0 and j == 0 else math.inf))
+    # Fill up unvisited with just the start.
+    unvisited.insert(HeapItem(Node(loc=(0, 0), last_dir=""), 0))
 
     while True:
         # Get the smallest priority neighbor
@@ -184,27 +176,28 @@ def main():
             break
 
         # Consider all neighbors
-        neighbors: List[Node] = []
+        neighbors: Dict[str, Node] = {d: Node.from_node(cur.node, d) for d in ['U', 'R', 'D', 'L']}
+        cg = cur.cant_go()
 
         # - U
-        if cur.node.loc[0] != 0 and (cur.node.loc[0] - 1, cur.node.loc[1]) not in visited and cur.cant_go() != 'U':
-            neighbors.append(Node.from_node((cur.node.loc[0] - 1, cur.node.loc[1]), 'U'))
+        if cur.node.loc[0] == 0 or neighbors['U'] in visited or 'U' in cg:
+            del neighbors['U']
         # - R
-        if cur.node.loc[1] != len(lines) - 1 and (cur.node.loc[0], cur.node.loc[1] + 1) not in visited and cur.cant_go() != 'R':
-            neighbors.append(Node.from_node((cur.node.loc[0], cur.node.loc[1] + 1), 'R'))
+        if cur.node.loc[1] == len(lines) - 1 or neighbors['R'] in visited or 'R' in cg:
+            del neighbors['R']
         # - D
-        if cur.node.loc[0] != len(lines) - 1 and (cur.node.loc[0] + 1, cur.node.loc[1]) not in visited and cur.cant_go() != 'D':
-            neighbors.append(Node.from_node((cur.node.loc[0] + 1, cur.node.loc[1]), 'D'))
+        if cur.node.loc[0] == len(lines) - 1 or neighbors['D'] in visited or 'D' in cg:
+            del neighbors['D']
         # - L
-        if cur.node.loc[1] != 0 and (cur.node.loc[0], cur.node.loc[1] - 1) not in visited and cur.cant_go() != 'L':
-            neighbors.append(Node.from_node((cur.node.loc[0], cur.node.loc[1] - 1), 'L'))
+        if cur.node.loc[1] == 0 or neighbors['L'] in visited or 'L' in cg:
+            del neighbors['L']
 
-        for n in neighbors:
+        for d in neighbors:
             # Have we found a better path?
-            unvisited.decrease_priority(n, cur.priority + int(lines[n[0][0]][n[0][1]]))
-            # unvisited.update_path(n[0], cur, n[1])
+            n = neighbors[d]
+            unvisited.insert_or_decrease_priority(n, cur.priority + int(lines[n.loc[0]][n.loc[1]]))
 
-            # Mark as visited
+        # Mark as visited
         visited[cur.node] = cur.priority  # , cur.path)
 
     print(visited[(len(lines) - 1, len(lines) - 1)])
